@@ -1,0 +1,487 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML>
+<HEAD>
+<TITLE> AJAX Desktop </TITLE>
+<style>
+body{
+        padding: 0;
+        margin: 0;
+}
+.widget{
+        width: 280;
+        min-height: 50px;
+        border: 1px solid #CACACA;
+        background-color: #FFFFEA;
+        position: absolute;
+}
+.rss{
+        font-size: 8pt;
+        font-family: arial;
+
+}
+A:link{
+        color:black;
+}
+</style>
+<script type='text/javascript' src='http://www.sukhchander.com/js/JMuseManager.js'> </script>
+<script type='text/javascript' src='http://www.sukhchander.com/js/JRSSManager.js'> </script>
+<script type='text/javascript' src='http://www.sukhchander.com/js/SearchResultObjects.js'> </script>
+<script type='text/javascript' src='http://www.sukhchander.com/js/JSearchManager.js'> </script>
+<SCRIPT LANGUAGE="JavaScript">
+<!--
+
+//zIndex counter
+var z=100;
+var xleft=150;
+var xright=150;
+
+//----------------------- MuseStorm components code ------------------------
+var manager=new MuseManager();
+manager.init("DesktopKey", this);
+
+var rssManager=new RSSManager();
+rssManager.init(manager, "rssManager", this);
+
+//SearchManager and handler for Google Web Search
+var handler=new Object();       
+var searchManager=new SearchManager();
+searchManager.init(manager, "searchManager", handler);
+//SearchManager and handler for Flickr Photos
+var fhandler=new Object();      
+var fsearchManager=new SearchManager();
+fsearchManager.init(manager, "fsearchManager", fhandler);
+//SearchManager and handler for Ebay auctions
+var ehandler=new Object();      
+var esearchManager=new SearchManager();
+esearchManager.init(manager, "esearchManager", ehandler);
+//SearchManager and handler for Blogs 
+var bhandler=new Object();      
+var bsearchManager=new SearchManager();
+bsearchManager.init(manager, "bsearchManager", bhandler);
+
+
+//----------------------- code for adding an RSS widget
+--------------------------
+function openFeedBox(){
+        document.getElementById("addfeed").style.visibility="visible";
+        z++;
+        document.getElementById("addfeed").style.zIndex=z;z++;  
+        document.getElementById("feed_url").value="";
+}
+
+//take user feed URL and (1) load feed (2) add widget to desktop
+function addUserFeed(){
+        document.getElementById('addfeed').style.visibility='hidden';   //hide
+the control
+        var fd=document.getElementById("feed_url").value;       
+        if (fd==null || fd.length==0)
+                return;
+        if (rssManager.getFeedByURL(fd)!=null){ //feed already exists
+                alert("Feed: "+fd+"\nalready exists");
+                return;
+        }       
+        addFeed(fd);    //add feed to desktop
+        rssManager.addFeed(fd);         //add feed to RSSManager and load feed
+data
+}
+
+//add feed to desktop
+function addFeed(str){  //str holds the feed url
+        if (str!=null && str.length>0){
+                var w=document.getElementById("widgets");               
+                w.innerHTML+="<div id='widget_"+str+"' type='rss' class='widget'
+style='position: absolute; left: "+xleft+";top: "+xright+"; width: 280;'>
+<div style='cursor: move; width: 100%; height: 16; background-color: #CCCCFF;
+border-bottom: 1px solid #CACACA; '><table  style='font-family: arial;
+font-size: 8pt;' width=100% cellpadding=0 cellspacing=0 border=0><tr><td
+ALIGN=left id='titlebar_"+str+"' style='padding-left: 5px;'>Loading...</td><td
+align=right style='padding-right: 5px;'> <a
+href=javascript:closeWidget('widget_"+str+"')
+style='text-decoration:none;'><b>X</b></a></td></tr></table></div><div
+id='content_"+str+"' style='padding: 5px; font-family: arial; font-size: 8pt;
+width: 100%'></div></div>";
+                xleft+=20;
+                xright+=20;
+        }
+}
+
+//handle RSS feed data from the server - called from RSSManager
+function onGetFeed(feed,res){   
+        var w=document.getElementById("content_"+feed.getFeedUrl());
+        if (w==null)
+                return;
+        w.innerHTML=""; 
+        var arr=feed.getItems();
+        var len=arr.length<=7 ? arr.length : 7;
+        var str="";
+        str+="<ul style='margin: 0; padding:0;'>";
+        for (var i=0;i<len ;i++ ){              
+                str+="<li style='font-size: 9pt; font-family: arial;
+list-style-image:
+url(http://www.musestorm.com/scripts/widgets/images/checkers_bullet.gif);
+padding: 0;padding-top: 4px; margin-left: 12;'><a href='"+arr[i].getUrl()+"'
+style='color: #333333;'>"+arr[i].getTitle()+"</a></li>";
+        }
+        str+="</ul>";
+        w.innerHTML+=str;
+        document.getElementById("titlebar_"+feed.getFeedUrl()).innerHTML=feed.getTitle();
+}
+
+//---------------------------- handle search events --------------------------
+
+function addGoogleWebSearch(){
+        if (document.getElementById('widget_google')!=null)             //widget
+already on desktop
+                return;
+        //add widget to desktop
+        var w=document.getElementById("widgets");       
+        w.innerHTML+="<div id='widget_google' type='search' class='widget'
+style='position: absolute; top: 70; left: 70; width: 300; z-index: "+z+"'><div
+style='cursor: move; width: 100%; height: 16; background-color: #CCCCFF;
+border-bottom: 1px solid #CACACA; '><table  style='font-family: arial;
+font-size: 8pt;' width=100% cellpadding=0 cellspacing=0 border=0><tr><td
+ALIGN=left id='titlebar_google' style='padding-left: 5px;'>Google Search</td><td
+align=right style='padding-right: 5px;'> <a
+href=javascript:closeWidget('widget_google')
+style='text-decoration:none;'><b>X</b></a></td> </tr></table></div><div
+id='google_content' style='padding: 4 4 4 10; background-color: #FFFFEA;
+font-family: arial; font-size: 9pt;'><input type=text style='font-family:arial;
+font-size: 10px;' id='searchtext' name='searchtext'> <input type=button
+style='font-family:arial; font-size: 9px;' value='search'
+onclick='searchGoogle()'></div></div>";
+        z++;
+}
+
+function addFlickr(){
+        if (document.getElementById('widget_flickr')!=null)             //widget
+already on desktop
+                return;
+        //add widget to desktop
+        var w=document.getElementById("widgets");       
+        w.innerHTML+="<div id='widget_flickr' type='search' class='widget'
+style='position: absolute; top: 200; left: 20; width: 270; z-index: "+z+"'><div
+style='cursor: move; width: 100%; height: 16; background-color: #CCCCFF;
+border-bottom: 1px solid #CACACA; '><table  style='font-family: arial;
+font-size: 8pt;' width=100% cellpadding=0 cellspacing=0 border=0><tr><td
+ALIGN=left id='titlebar_flickr' style='padding-left: 5px;'>Flickr Photos</td><td
+align=right style='padding-right: 5px;'> <a
+href=javascript:closeWidget('widget_flickr')
+style='text-decoration:none;'><b>X</b></a></td> </tr></table></div><div
+id='flickr_content' style='padding: 4 4 4 10; background-color: #FFFFEA;
+font-family: arial; font-size: 9pt;'><input type=text style='font-family:arial;
+font-size: 10px;' id='flickrtext'> <input type=button style='font-family:arial;
+font-size: 9px;' value='View Photos' onclick='searchFlickr()'></div></div>";
+        z++;
+}
+
+function addBlogs(){
+        if (document.getElementById('widget_blogs')!=null)              //widget
+already on desktop
+                return;
+        //add widget to desktop
+        var w=document.getElementById("widgets");       
+        w.innerHTML+="<div id='widget_blogs' type='search' class='widget'
+style='position: absolute; top: 250; left: 20; width: 270; z-index: "+z+"'><div
+style='cursor: move; width: 100%; height: 16; background-color: #CCCCFF;
+border-bottom: 1px solid #CACACA; '><table  style='font-family: arial;
+font-size: 8pt;' width=100% cellpadding=0 cellspacing=0 border=0><tr><td
+align=left id='titlebar_blogs' style='padding-left: 5px;'>Technorati Blog
+Search</td><td align=right style='padding-right: 5px;'> <a
+href=javascript:closeWidget('widget_blogs')
+style='text-decoration:none;'><b>X</b></a></td> </tr></table></div><div
+id='blogs_content' style='padding: 4 4 4 10; background-color: #FFFFEA;
+font-family: arial; font-size: 9pt;'><input type=text style='font-family:arial;
+font-size: 10px;' id='blogstext'> <input type=button style='font-family:arial;
+font-size: 9px;' value='Search Technorati'
+onclick='searchBlogs()'></div></div>";
+        z++;    
+}
+
+//Google Web search
+handler.onNewSearch=function(){         //start a new search
+        searchManager.getFirstResults(searchManager.SEARCH_WEB,10);
+}
+//Flickr photos
+fhandler.onNewSearch=function(){                //start a new search
+        fsearchManager.getFirstResults(fsearchManager.SEARCH_PHOTOS,9);
+}
+//Technorati 
+bhandler.onNewSearch=function(){                //start a new search
+        bsearchManager.getFirstResults(bsearchManager.SEARCH_BLOGS,10);
+}
+
+
+//Google Web search
+handler.onWebResults=function(arr,res){         //place search results in widget
+        if (res.status!="OK" || arr==null)
+                return;
+        var w=document.getElementById("google_content");
+        if (!w)
+                return;
+        w.innerHTML="";
+        var str="<ul style='padding:0 ; margin: 0 0 0 0;'>";    
+        for (var i=0;i<arr.length;i++ )
+        {                                       
+                str+="<li style='font-size: 9pt; font-family: arial;
+list-style-image:
+url(http://www.musestorm.com/scripts/widgets/images/checkers_bullet.gif);
+padding: 0;padding-top: 4px; margin-left: 12;'><a
+href='"+searchManager.openResult(arr[i].getMuseStormID())+"'
+title='"+arr[i].getSummary()+"' style='color: #333333;'>";
+                str+=arr[i].getTitle()+"</a></li>";
+        }
+        str+="</ul>";
+        w.innerHTML=str;
+        w.innerHTML+="<br><table align=center width=90% cellpadding=0
+cellspacing=0 border=0><tr><td align=center><span style='font-size: 8pt;
+font-family: arial; ' align=right><b><a href='javascript:handler.prev()'
+style='text-decoration: none; color: blue;'>&lt;&lt; prev</a>&nbsp;&nbsp;<a
+href='javascript:handler.next()' style='text-decoration: none; color:
+blue;'>next &gt;&gt;</a></b></span></td></tr></table>";
+}
+
+//Flickr photos
+fhandler.onPhotosSearchResults=function(arr,res){               //place search
+results in widget
+        if (res.status!="OK" || arr==null)
+                return;
+        var w=document.getElementById("flickr_content");
+        if (!w)
+                return;
+        w.innerHTML="";
+        var str="";
+        for (var i=0;i<arr.length;i++ )
+        {
+                str+="<a
+href='"+fsearchManager.openResult(arr[i].getMuseStormID())+"'><img border='0'
+src='"+arr[i].getThumbnail().url+"' width='60' height='60' style='padding: 4px;'
+alt='"+arr[i].getTitle()+"'></a>";      
+        }       
+        w.innerHTML=str;
+        w.innerHTML+="<table width=90% cellpadding=0 cellspacing=0
+border=0><tr><td align=center><span style='font-size: 8pt; font-family: arial; '
+align=right><b><a href='javascript:fhandler.prev()' style='text-decoration:
+none; color: blue;'>&lt;&lt; prev</a>&nbsp;&nbsp;<a
+href='javascript:fhandler.next()' style='text-decoration: none; color:
+blue;'>next &gt;&gt;</a></b></span></td></tr></table></div>";   
+}
+
+//Blogs
+bhandler.onBlogsSearchResults=function(arr,res){                //place search
+results in widget
+        if (res.status!="OK" || arr==null)
+                return;
+        var w=document.getElementById("blogs_content");
+        if (!w)
+                return;
+        w.innerHTML="";
+        var str="<ul style='padding: 0; margin: 0;'>";
+        for (var i=0;i<arr.length;i++ )
+        {
+                str+="<li style='font-size: 9pt; font-family: arial;
+list-style-image:
+url(http://www.musestorm.com/scripts/widgets/images/checkers_bullet.gif);
+padding: 0;padding-top: 4px; margin-left: 12;'><a
+href='"+bsearchManager.openResult(arr[i].getMuseStormID())+"'
+title='"+arr[i].getExcerpt()+"' style='color: #333333;'>";
+                str+=arr[i].getTitle()+"</a></li>";
+        }       
+        w.innerHTML=str;
+        w.innerHTML+="</ul><table width=90% cellpadding=0 cellspacing=0
+border=0><tr><td align=center><span style='font-size: 8pt; font-family: arial; '
+align=right><b><a href='javascript:bhandler.prev()' style='text-decoration:
+none; color: blue;'>&lt;&lt; prev</a>&nbsp;&nbsp;<a
+href='javascript:bhandler.next()' style='text-decoration: none; color:
+blue;'>next &gt;&gt;</a></b></span></td></tr></table></div>";   
+}
+
+//Google Web search
+handler.next=function(){
+        searchManager.getNextResults(searchManager.SEARCH_WEB,10);
+}
+//Google Web search
+handler.prev=function(){
+        searchManager.getPrevResults(searchManager.SEARCH_WEB,10);
+}
+
+//Flickr photos
+fhandler.next=function(){
+        fsearchManager.getNextResults(fsearchManager.SEARCH_PHOTOS,9);
+}
+//Flickr photos
+fhandler.prev=function(){
+        fsearchManager.getPrevResults(fsearchManager.SEARCH_PHOTOS,9);
+}
+
+//blogs
+bhandler.next=function(){
+        bsearchManager.getNextResults(bsearchManager.SEARCH_BLOGS,10);
+}
+//Blogs 
+bhandler.prev=function(){
+        bsearchManager.getPrevResults(bsearchManager.SEARCH_BLOGS,10);
+}
+
+function searchGoogle(){
+        var term=document.getElementById("searchtext");         //get the search
+term
+        if (term.value.length>0){
+                searchManager.newSearch(term.value);            //start a new
+search
+                var w=document.getElementById("google_content");
+                w.innerHTML="loading...";
+        }
+}
+
+function searchFlickr(){
+        var term=document.getElementById("flickrtext");         //get the search
+term
+        if (term.value.length>0){
+                fsearchManager.newSearch(term.value);           //start a new
+search
+                var w=document.getElementById("flickr_content");
+                w.innerHTML="loading...";
+        }
+}
+
+function searchBlogs(){
+        var term=document.getElementById("blogstext");          //get the search
+term
+        if (term.value.length>0){
+                bsearchManager.newSearch(term.value);           //start a new
+search
+                var w=document.getElementById("blogs_content");
+                w.innerHTML="loading...";
+        }
+}
+
+//--------------------- code for dragging / closing a widget
+----------------------
+
+function closeWidget(id){       
+        var widgets=document.getElementById('widgets');
+        var node=document.getElementById(id);
+        if (node.attributes['type'].value=="rss")       //remove feed from
+RSSManager list
+                rssManager.removeFeed(id.substring(id.indexOf('_')+1,id.length));
+        widgets.removeChild(node);
+}
+
+var ie=document.all;
+var firefox=document.getElementById&&!document.all;
+
+var isDrag=false;
+var x,y;
+var dobj;
+
+function mouseMove(e)
+{
+  if (isDrag)   //only move the box if the user is dragging it
+  {     
+        if (firefox){
+                dobj.style.left = e.clientX + (tx - x);
+                dobj.style.top  = e.clientY + (ty - y);
+        }
+        else{           //IE
+                dobj.style.left = event.clientX + (tx - x);
+                dobj.style.top  = event.clientY + (ty - y);
+        }    
+  }
+}
+
+//handle click on widget title bar
+function selectMouse(e) 
+{       
+        if (firefox){
+                //verify that user clicked the 'titlebar' element 
+                var p=e.target; 
+                if (p.attributes['id'] &&
+p.attributes['id'].value.indexOf("titlebar")!=-1){
+                        isDrag=true;
+                        x=e.clientX;
+                        y=e.clientY;
+                        //get the widget coordinates from the widget root
+                        var pstr=p.attributes['id'].value;
+                        var
+temp=pstr.substring(pstr.indexOf('_')+1,pstr.length);
+                        dobj=document.getElementById('widget_'+temp);
+                        //record widget location
+                        tx=parseInt(dobj.style.left);
+                        ty=parseInt(dobj.style.top);
+                        //change zIndex
+                        dobj.style.zIndex=z; z++;
+                }
+        }
+        else{           //IE
+                //verify that user clicked the 'titlebar' element
+                var p=event.srcElement;         
+                if (p.attributes['id'] &&
+p.attributes['id'].value.indexOf("titlebar")!=-1){
+                        isDrag=true;
+                        x=event.clientX;
+                        y=event.clientY;
+                        //get the widget coordinates from the widget root
+                        var pstr=p.attributes['id'].value;
+                        var
+temp=pstr.substring(pstr.indexOf('_')+1,pstr.length);                   
+                        dobj=document.getElementById('widget_'+temp);
+                        //record widget location
+                        tx=parseInt(dobj.style.left);
+                        ty=parseInt(dobj.style.top);
+                        //change zIndex
+                        dobj.style.zIndex=z; z++;
+                }
+        }
+}
+document.onmousemove=mouseMove;
+document.onmousedown=selectMouse;
+document.onmouseup=function(){
+        isDrag=false;
+        dobj=null;
+}
+
+//---------------------------------------
+function initDesktop(){
+        addGoogleWebSearch();
+        addFeed("http://blogs.zdnet.com/web2explorer/wp-rss2.php");
+        rssManager.addFeed("http://blogs.zdnet.com/web2explorer/wp-rss2.php");
+        addFeed("http://feeds.feedburner.com/Techcrunch");
+        rssManager.addFeed("http://feeds.feedburner.com/Techcrunch");   
+}
+
+//-->
+
+</SCRIPT>
+</HEAD>
+
+<BODY onload="initDesktop()">
+<!-- top options bar -->
+<div id="top_nav" style="height: 45px; background-color: #EFF3F7; border-bottom:
+1px solid #CCCCCC;">
+        <input type=button value="Add RSS Feed" style="margin-top: 10px;
+margin-left: 10px;" onclick="openFeedBox()">
+        <input type=button value="Google Web Search" style="margin-top: 10px;
+margin-left: 10px;" onclick="addGoogleWebSearch()">
+        <input type=button value="Flickr Photos" style="margin-top: 10px;
+margin-left: 10px;" onclick="addFlickr()">
+        <input type=button value="Technorati Blog Search" style="margin-top:
+10px; margin-left: 10px;" onclick="addBlogs()">
+</div>
+
+<!-- this is the control that allows user to add an RSS widget to the desktop
+-->
+<div id="addfeed" style="position: absolute; top: 100; left: 100; padding: 4px;
+background-color: #CCCCFF; border: 1px solid #CACACA;height: 22; width: 250;
+visibility: hidden; z-index: 90;"><input type=text style="font-family:arial;
+font-size: 10px;" id="feed_url"> <input type=button style="font-family:arial;
+font-size: 9px;" value="add feed"
+onclick="addUserFeed()">&nbsp;&nbsp;&nbsp;&nbsp;<input type=button
+style="font-family:arial; font-size: 9px;" value="cancel"
+onclick="document.getElementById('addfeed').style.visibility='hidden'"></div>
+
+<!-- this DIV is a placeholder for widgets -->
+<div id="widgets">
+        
+</div>
+</BODY>
+</HTML>
