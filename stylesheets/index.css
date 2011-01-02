@@ -33,9 +33,9 @@ a:hover { opacity:1; }
 a:hover a strong { opacity:1; top:-10px; }
 
 header h1 {
-  font-size: 80px;
-  line-height: 84px;
-  letter-spacing: -1px;
+  font-size: 108px;
+  line-height: 108px;
+  letter-spacing: -2px;
   font-weight: bold;
   margin-bottom: 24px;
   text-align: center;
@@ -79,13 +79,13 @@ body {
   margin: 0 auto;
   position: relative;
 
-  font-family: "magion-web-1", "magion-web-2", sans-serif;
+  /*font-family: "magion-web-1", "magion-web-2", sans-serif;*/
+  font-family: "lobster-1", "lobster-2", sans-serif;
 
-  -webkit-box-reflect: below -24px -webkit-gradient(linear, left top, left bottom, from(transparent), color-stop(0.67, transparent), to(rgba(255,255,255, 0.67)));
+  -webkit-box-reflect: below -24px -webkit-gradient(linear, left top, left bottom, from(transparent), color-stop(0.85, transparent), to(rgba(255,255,255, 0.85)));
 }
 
 #index {
-  background-image: url("http://commondatastorage.googleapis.com/assets.sukhchander.com/images/IMG_9302.jpg");
   background-position: center top; 
   background-repeat: no-repeat;
 }
@@ -389,18 +389,18 @@ input:hover,input:focus{
           box-shadow: 0 0 8px lightblue;
 }
 
-.errorTip{
-  background-color:#970F08;
-  color:white;
-  font-size:10px;
-  height:26px;
-  letter-spacing:0.4px;
-  margin-left:20px;
-  padding:5px 0 5px 10px;
-  position:absolute;
-  text-shadow:1px 1px 0 #555555;
-  width:200px;
-  right:-130px;
+.errorTip {
+  background-color: #970F08;
+  color: white;
+  font-size: 12px;
+  height: 24px;
+  letter-spacing: 0.75px;
+  padding: 10px 8px 4px 16px;
+  position: absolute;
+  right: -124px;
+  text-align: center;
+  text-shadow: 1px 1px 0 #555555;
+  width: 196px;
 }
 
 #footer{
@@ -412,4 +412,12 @@ input:hover,input:focus{
   text-align:center;
   font-weight:normal;
   font-style:italic;
+}
+
+#greeting {
+  display:none;
+  text-align:center;
+  margin:12px 0px 0px 96px;
+  font-size:24px;
+}
 }
